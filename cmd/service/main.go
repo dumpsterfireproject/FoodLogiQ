@@ -18,6 +18,10 @@ import (
 const userKey = "userKey"
 
 func main() {
+	startServer()
+}
+
+func startServer() {
 	err := godotenv.Load("local.env")
 	if err != nil {
 		log.Fatalf("Some error occured. Err: %s", err)
@@ -38,12 +42,14 @@ func main() {
 	eventHandler := service.NewEventHandlerService(service.WithClient(client), service.WithDbName(mongoDbName), service.WithCollectionName(mongoCollectionName))
 	authenticationService := service.NewAuthenticationService()
 
-	authenticate := authenticator(authenticationService)
+	router := setupHandler(authenticationService, eventHandler)
+	router.Run(":8080")
+}
 
+func setupHandler(authenticationService service.AuthenticationService, eventHandler service.EventService) *gin.Engine {
 	router := gin.Default()
-
+	authenticate := authenticator(authenticationService)
 	authenticated := router.Group("/", authenticate)
-
 	authenticated.GET("events", func(c *gin.Context) {
 		user := getUser(c)
 		events, result := eventHandler.ListEvents(c.Request.Context(), user)
@@ -85,8 +91,7 @@ func main() {
 			c.JSON(result.Status, gin.H{"error": result.Err})
 		}
 	})
-
-	router.Run(":8080")
+	return router
 }
 
 func authenticator(authenticationService service.AuthenticationService) func(*gin.Context) {

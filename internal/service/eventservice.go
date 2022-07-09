@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/dumpsterfireproject/FoodLogiQ/internal/model"
@@ -66,6 +67,7 @@ func (s *EventHandlerServiceImpl) CreateEvent(ctx context.Context, user *User, e
 	// TODO: Handle defaults for rest of the event
 	_, err := s.collection().InsertOne(ctx, event)
 	if err != nil {
+		fmt.Printf("error in CreateEvent: %s\n", err)
 		return ReturnCode{http.StatusInternalServerError, err}
 	}
 	return ReturnCode{http.StatusCreated, nil}
@@ -74,6 +76,7 @@ func (s *EventHandlerServiceImpl) CreateEvent(ctx context.Context, user *User, e
 func (s *EventHandlerServiceImpl) DeleteEvent(ctx context.Context, user *User, id string) ReturnCode {
 	_, err := s.collection().UpdateOne(ctx, bson.M{"_id": id, "createdBy": user.UserID}, bson.M{"isDeleted": true})
 	if err != nil {
+		fmt.Printf("error in DeleteEvent: %s\n", err)
 		return ReturnCode{http.StatusInternalServerError, err}
 	}
 	return ReturnCode{200, nil}
@@ -83,6 +86,7 @@ func (s *EventHandlerServiceImpl) GetEvent(ctx context.Context, user *User, id s
 	var event *model.Event
 	err := s.collection().FindOne(ctx, bson.M{"_id": id, "createdBy": user.UserID}).Decode(event)
 	if err != nil {
+		fmt.Printf("error in GetEvent: %s\n", err)
 		return nil, ReturnCode{http.StatusInternalServerError, err}
 	}
 	return event, ReturnCode{200, nil}
@@ -92,6 +96,7 @@ func (s *EventHandlerServiceImpl) ListEvents(ctx context.Context, user *User) ([
 	var events []*model.Event
 	cursor, err := s.collection().Find(ctx, bson.M{"createdBy": user.UserID})
 	if err != nil {
+		fmt.Printf("error in ListEvents: %s\n", err)
 		return []*model.Event{}, ReturnCode{http.StatusInternalServerError, err}
 	}
 
