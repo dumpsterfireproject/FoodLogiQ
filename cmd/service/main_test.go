@@ -59,6 +59,7 @@ func getStatus(ctx context.Context) int {
 
 func theServerIsStarted() {}
 
+// This is kind of brute-force and not that clean, but this is a quick prototype
 func theSeedDataHasBeenInserted(ctx context.Context) error {
 	collection := mongoClient.Database(dbName).Collection(collectionName)
 	oids := []primitive.ObjectID{}
