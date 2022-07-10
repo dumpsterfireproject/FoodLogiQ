@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/dumpsterfireproject/FoodLogiQ/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -63,7 +66,14 @@ func (s *EventHandlerServiceImpl) collection() *mongo.Collection {
 }
 
 func (s *EventHandlerServiceImpl) CreateEvent(ctx context.Context, user *User, event *model.Event) ReturnCode {
+	// TODO: should move this validation to model package
 	event.CreatedBy = &user.UserID
+	now := time.Now()
+	event.CreatedAt = &now
+	event.Id = primitive.NewObjectID()
+	if event.Type != model.ReceivingType && event.Type != model.ShippingType {
+		return ReturnCode{http.StatusBadRequest, fmt.Errorf("invalid type (%s)", event.Type)}
+	}
 	// TODO: Handle defaults for rest of the event
 	_, err := s.collection().InsertOne(ctx, event)
 	if err != nil {
@@ -74,7 +84,12 @@ func (s *EventHandlerServiceImpl) CreateEvent(ctx context.Context, user *User, e
 }
 
 func (s *EventHandlerServiceImpl) DeleteEvent(ctx context.Context, user *User, id string) ReturnCode {
-	_, err := s.collection().UpdateOne(ctx, bson.M{"_id": id, "createdBy": user.UserID}, bson.M{"isDeleted": true})
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		fmt.Printf("error in DeleteEvent: %s\n", err)
+		return ReturnCode{http.StatusInternalServerError, err}
+	}
+	_, err = s.collection().UpdateOne(ctx, bson.M{"_id": oid, "createdBy": user.UserID}, bson.M{"isDeleted": true})
 	if err != nil {
 		fmt.Printf("error in DeleteEvent: %s\n", err)
 		return ReturnCode{http.StatusInternalServerError, err}
@@ -83,18 +98,33 @@ func (s *EventHandlerServiceImpl) DeleteEvent(ctx context.Context, user *User, i
 }
 
 func (s *EventHandlerServiceImpl) GetEvent(ctx context.Context, user *User, id string) (*model.Event, ReturnCode) {
-	var event *model.Event
-	err := s.collection().FindOne(ctx, bson.M{"_id": id, "createdBy": user.UserID}).Decode(event)
+	var event model.Event
+	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		fmt.Printf("error in GetEvent: %s\n", err)
 		return nil, ReturnCode{http.StatusInternalServerError, err}
 	}
-	return event, ReturnCode{200, nil}
+	filter := bson.M{"_id": oid, "createdBy": user.UserID, "isDeleted": bson.M{"$ne": true}}
+	fmt.Printf("FILTER: %v\n", filter)
+	result := s.collection().FindOne(ctx, filter)
+	if errors.Is(result.Err(), mongo.ErrNoDocuments) {
+		return nil, ReturnCode{http.StatusNotFound, nil}
+	} else if result.Err() != nil {
+		fmt.Printf("error in GetEvent: %s\n", result.Err())
+		return nil, ReturnCode{http.StatusInternalServerError, result.Err()}
+	}
+	err = result.Decode(&event)
+	if err != nil {
+		fmt.Printf("error decoding in GetEvent: %v\n", err)
+		return nil, ReturnCode{http.StatusInternalServerError, err}
+	}
+	return &event, ReturnCode{200, nil}
 }
 
 func (s *EventHandlerServiceImpl) ListEvents(ctx context.Context, user *User) ([]*model.Event, ReturnCode) {
 	var events []*model.Event
-	cursor, err := s.collection().Find(ctx, bson.M{"createdBy": user.UserID})
+
+	cursor, err := s.collection().Find(ctx, bson.M{"createdBy": user.UserID, "isDeleted": bson.M{"$ne": true}})
 	if err != nil {
 		fmt.Printf("error in ListEvents: %s\n", err)
 		return []*model.Event{}, ReturnCode{http.StatusInternalServerError, err}

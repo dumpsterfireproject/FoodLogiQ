@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // {
@@ -21,18 +23,21 @@ import (
 // 	]
 //    }
 
+const ShippingType = "shipping"
+const ReceivingType = "receiving"
+
 type Contents struct {
-	Gtin           string     `json:"gtin" bson:"gtin,omitempty"`
-	Lot            string     `json:"lot" bson:"lot,omitempty"`
+	Gtin           string     `json:"gtin" bson:"gtin"`
+	Lot            string     `json:"lot" bson:"lot"`
 	BestByDate     *time.Time `json:"bestByDate,omitempty" bson:"bestByDate,omitempty"`
 	ExpirationDate *time.Time `json:"expirationDate,omitempty" bson:"expirationDate,omitempty"`
 }
 
 type Event struct {
-	Id        *string    `json:"id,omitempty" bson:"_id,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
-	CreatedBy *string    `json:"createdBy,omitempty" bson:"createdBy,omitempty"`
-	IsDeleted bool       `json:"isDeleted" bson:"isDeleted,omitempty"`
-	Type      string     `json:"type" bson:"type,omitempty"`
-	Contents  []Contents `json:"contents" bson:"contents,omitempty"`
+	Id        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	CreatedAt *time.Time         `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
+	CreatedBy *string            `json:"createdBy,omitempty" bson:"createdBy,omitempty"`
+	IsDeleted bool               `json:"isDeleted" bson:"isDeleted"`
+	Type      string             `json:"type" bson:"type"`
+	Contents  []Contents         `json:"contents" bson:"contents"`
 }

@@ -14,4 +14,4 @@ Examples:
     | token                            | status |
     | 74edf612f393b4eb01fbc2c29dd96671 | 200    |
     | d88b4b1e77c70ba780b56032db1c259b | 200    |
-    | xxxxx                            | 403    |
+    | 00edf612f393b4eb01fbc2c29dd96671 | 403    |

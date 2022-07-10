@@ -40,10 +40,12 @@ In order to submit your project, please assemble all of your needed files into a
 Please provide access to the github repository to the github user bonczj (Josh Bonczkowski). 
 
 ## User Stories 
+
+### Create Events
 - As an API consumer, I want a REST API to create an event 
 - As an API consumer, I want a REST API that I can pass a JSON document representing an event to. The API will validate the data structure and  data provided. If the data represents a well formed event, then the event must be persisted and success is returned. If the data is not a well  formed event, then the event is not persisted and an error is returned. 
 
-### Acceptance Criteria 
+#### Acceptance Criteria 
 - If the user authentication fails, return an authentication failure status code 
 - REST API is built that accepts JSON document 
 - Required values must be provided and are validated 
@@ -51,32 +53,43 @@ Please provide access to the github repository to the github user bonczj (Josh B
 - If the optional date values are provided within the contents, the date values are validated as dates 
 - If all data is provided successfully, store the event internally and return an appropriate success status code 
 - If there are any errors, return an error message about the error and an appropriate failure status code 
-- As an API consumer, I want a REST API to delete a specific event 
-- Build a REST API that will attempt to remove access to an event. Due to audit constraints, we cannot just remove data from the platform. Instead,  if a user wants to remove data, it is soft deleted so that the information can be filtered out in the other APIs. 
 
-### Acceptance Criteria 
+### Delete Events
+- As an API consumer, I want a REST API to delete a specific event 
+
+Build a REST API that will attempt to remove access to an event. Due to audit constraints, we cannot just remove data from the platform. Instead, if a user wants to remove data, it is soft deleted so that the information can be filtered out in the other APIs. 
+
+#### Acceptance Criteria 
 - If the user authentication fails, return an authentication failure status code 
 - If the supplied event ID does not exist, return an appropriate failure status code 
 - If the supplied event ID does exist, but not accessible by the user, return an appropriate failure status code 
 - If the supplied event ID does exist and is accessible by the user, mark the event as deleted and return an appropriate success status  code 
 - If the event has already been deleted, consider it a success 
-- As an API consumer, I want a REST API to retrieve a specific event 
-- Build a REST API that will list a specific event given an ID value. You are building a multi-tenant REST API, so only return the data if the user  who is requesting the data is also the user who created the data. 
 
-### Acceptance Criteria 
+### Retrieve Specific Event
+- As an API consumer, I want a REST API to retrieve a specific event 
+
+Build a REST API that will list a specific event given an ID value. You are building a multi-tenant REST API, so only return the data if the user  who is requesting the data is also the user who created the data. 
+
+#### Acceptance Criteria 
 - If the user authentication fails, return an authentication failure status code 
 - If the ID provided is not found, return an appropriate failure status code 
 - If the ID provided is found, but was not created by the user who is making the REST API call, return the same failure as if the ID was not  found 
 - If the event of the ID has been deleted, return the same failure as if the ID was not found 
 - If the ID provided is found and the user making the REST API call also created the event, then return the event. 
-- As an API consumer, I want a REST API to list all of my events 
-- Build a REST API that will retrieve and list all events that the current user has access to. The API shall return a list of events (or an empty list) for  the user. The events should be sorted based on the createdAt datetime with the newest events first.
 
-### Acceptance Criteria 
+### List Events
+- As an API consumer, I want a REST API to list all of my events 
+
+Build a REST API that will retrieve and list all events that the current user has access to. The API shall return a list of events (or an empty list) for  the user. The events should be sorted based on the createdAt datetime with the newest events first.
+
+#### Acceptance Criteria 
 - If the user authentication fails, return an authentication failure status code 
 - If the user has no events, return an empty list 
 - If the user has events, return the list of events sorted based on createdAt with the newest events first 
 - If any of the events have been deleted, do not return them in the results 
+
+### Deployment
 - As an DevOps engineer, I want to deploy this project utilizing docker / docker-compose 
 - At FoodLogiQ, out platform utilizes docker containers to run. This ensures the code is portable across servers and operating systems. For this  project, create a docker container that will assemble your REST API and any required resources. If you are utilizing additional services such as a  database or web server, then also a docker-compose file that will start up and connect all of the dependent services with each other. 
 
