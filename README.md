@@ -17,7 +17,9 @@ In this project, you will build REST services around an event data structure as 
  { 
  "gtin": "1234", // required. Global Trade  Item Number. 14-digit number. 
  "lot": "adffda", // required. any value. GTIN  + Lot are a compound identifier 
- "bestByDate": "2021-01-13", // optional. date value  "expirationDate": "2021-01-17", // optional. date value  }, 
+ "bestByDate": "2021-01-13", // optional. date value
+ "expirationDate": "2021-01-17", // optional. date value
+ }, 
  ... 
  ] 
 }
